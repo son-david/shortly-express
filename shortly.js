@@ -23,6 +23,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.use(util.CheckUser);
+
 // G E T // // // // // // // // // // // // // // // // // // // // // // // // //
 //
 //
@@ -127,14 +129,16 @@ function(req, res) {
   
 
   new User({username : username}).fetch().then(function(found) {
-    console.log(found.attributes.salt);
-    var hash = bcrypt.hashSync(password, found.attributes.salt);
-
-    if (found.attributes.password === hash) {
-      res.location('/');
-      res.redirect('/'); 
+    if (found){
+      var hash = bcrypt.hashSync(password, found.attributes.salt);
+      if (found.attributes.password === hash) {
+        res.location('/');
+        res.redirect('/'); 
+      } else {
+        res.redirect('/failed'); 
+      }
     } else {
-      res.redirect('/failed'); 
+      res.redirect('/failed');
     }
   })
 });
