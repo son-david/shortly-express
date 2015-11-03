@@ -22,6 +22,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+// G E T
+//
+//
+//
 
 app.get('/', 
 function(req, res) {
@@ -39,6 +43,11 @@ function(req, res) {
     res.send(200, links.models);
   });
 });
+
+// P O S T
+//
+//
+//
 
 app.post('/links', 
 function(req, res) {
@@ -79,7 +88,6 @@ function(req,res){
 
   new User({username : username}).fetch().then(function(found) {
     if (found) {
-      console.log('attributes returned from post to signup ---- ', found.attributes); 
       res.send(200, found.attributes);
     } else {
       // console.log('made it -------~');
@@ -96,12 +104,33 @@ function(req,res){
 
     }
   })
-
-  // console.log('test: ---', Users);
-
 });
 
+app.post('/login', 
+function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  
+  new User({username : username}).fetch().then(function(found) {
+    if (found) {
+      res.location('/');
+      res.send(200, found.attributes);
+    } else {
+      // console.log('made it -------~');
 
+      Users.create({
+        username: username,
+        password: password
+      })
+      .then(function(newUser) {
+        // console.log('LKDSFJKSLD:FJ', res.headers.location); 
+        res.location('/login'); 
+        res.send(200, newUser); 
+      })
+
+    }
+  })
+});
 
 /************************************************************/
 // Write your authentication routes here
