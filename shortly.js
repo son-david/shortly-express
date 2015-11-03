@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-// G E T
+// G E T // // // // // // // // // // // // // // // // // // // // // // // // //
 //
 //
 //
@@ -44,7 +44,12 @@ function(req, res) {
   });
 });
 
-// P O S T
+app.get('/login',
+function(req, res) {
+  res.render('login'); 
+});
+
+// P O S T // // // // // // // // // // // // // // // // // // // // // // // //  
 //
 //
 //
@@ -90,14 +95,11 @@ function(req,res){
     if (found) {
       res.send(200, found.attributes);
     } else {
-      // console.log('made it -------~');
-
       Users.create({
         username: username,
         password: password
       })
       .then(function(newUser) {
-        // console.log('LKDSFJKSLD:FJ', res.headers.location); 
         res.location('/'); 
         res.send(200, newUser); 
       })
@@ -116,18 +118,14 @@ function(req, res) {
       res.location('/');
       res.send(200, found.attributes);
     } else {
-      // console.log('made it -------~');
-
       Users.create({
         username: username,
         password: password
       })
       .then(function(newUser) {
-        // console.log('LKDSFJKSLD:FJ', res.headers.location); 
         res.location('/login'); 
         res.send(200, newUser); 
       })
-
     }
   })
 });
