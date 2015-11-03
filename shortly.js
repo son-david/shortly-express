@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -54,6 +55,11 @@ function(req, res) {
   res.render('signup');
 });
 
+app.get('/failed',
+function(req,res){
+  res.render('failed');
+});
+
 // P O S T // // // // // // // // // // // // // // // // // // // // // // // //  
 //
 //
@@ -98,15 +104,15 @@ function(req,res){
 
   new User({username : username}).fetch().then(function(found) {
     if (found) {
-      res.send(200, found.attributes);
+      res.redirect('/'); 
     } else {
       Users.create({
         username: username,
-        password: password
+        password: password,
+        salt: null
       })
       .then(function(newUser) {
-        res.location('/'); 
-        res.send(200, newUser); 
+        res.redirect('/'); 
       })
 
     }
@@ -117,20 +123,18 @@ app.post('/login',
 function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
+
   
+
   new User({username : username}).fetch().then(function(found) {
-    if (found) {
+    console.log(found.attributes.salt);
+    var hash = bcrypt.hashSync(password, found.attributes.salt);
+
+    if (found.attributes.password === hash) {
       res.location('/');
-      res.send(200, found.attributes);
+      res.redirect('/'); 
     } else {
-      Users.create({
-        username: username,
-        password: password
-      })
-      .then(function(newUser) {
-        res.location('/login'); 
-        res.send(200, newUser); 
-      })
+      res.redirect('/failed'); 
     }
   })
 });
