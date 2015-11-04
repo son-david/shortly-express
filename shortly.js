@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
 
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -23,24 +24,28 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-app.use(util.CheckUser);
+app.use(session({
+  secret: 'david',
+  resave : false,
+  saveUninitialized : true
+}));
 
 // G E T // // // // // // // // // // // // // // // // // // // // // // // // //
 //
 //
 //
 
-app.get('/', 
+app.get('/', util.CheckUser,
+function(req, res) {
+  res.render('index'); 
+});
+
+app.get('/create', util.CheckUser,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
-  res.render('index');
-});
-
-app.get('/links', 
+app.get('/links', util.CheckUser,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
@@ -67,7 +72,7 @@ function(req,res){
 //
 //
 
-app.post('/links', 
+app.post('/links', util.CheckUser,
 function(req, res) {
   var uri = req.body.url;
 
@@ -114,7 +119,7 @@ function(req,res){
         salt: null
       })
       .then(function(newUser) {
-        res.redirect('/'); 
+        util.createSession(newUser.username)
       })
 
     }
@@ -132,8 +137,8 @@ function(req, res) {
     if (found){
       var hash = bcrypt.hashSync(password, found.attributes.salt);
       if (found.attributes.password === hash) {
-        res.location('/');
-        res.redirect('/'); 
+        req.session.user = found.attributes.username;
+        res.redirect('/');
       } else {
         res.redirect('/failed'); 
       }
